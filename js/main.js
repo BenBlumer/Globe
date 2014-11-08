@@ -47,45 +47,33 @@ $container.append(renderer.domElement);
 //******************************
 
 
-var globeParticles = new THREE.Geometry();
+
+var globeParticles  = new THREE.Geometry();
+var globeMaterial   = new THREE.ParticleBasicMaterial({
+                            color:        0xfafafa,
+                            size:         5,
+                            map:          THREE.ImageUtils.loadTexture("images/particle.png"),
+                            blending:     THREE.AdditiveBlending,
+                            transparent:  true
+                          });
+
 var citiesParticles = new THREE.Geometry();
+var citiesMaterial  = new THREE.ParticleBasicMaterial({
+                            color:        0xff0000,
+                            size:         100,
+                            map:          THREE.ImageUtils.loadTexture("images/particle.png"),
+                            blending:     THREE.AdditiveBlending,
+                            transparent:  true
+                          }); 
 
-var basicMaterial = new THREE.ParticleBasicMaterial({
-  map:          THREE.ImageUtils.loadTexture("images/particle.png"),
-  blending:     THREE.AdditiveBlending,
-  transparent:  true
-});
-
-var globeMaterial = basicMaterial
-globeMaterial.color(0xfafafa);
-globeMaterial.size(5);
-
-var citiesMaterial = basicMaterial({
-  color: 0xff0000,
-  size: 50
-});
-
-var coastlineMaterial = basicMaterial({
-
-})
-
-// var globeMaterial = new THREE.ParticleBasicMaterial({
-//       color: 0xfafafa,
-//       size: 5,
-//       map: THREE.ImageUtils.loadTexture(
-//         "images/particle.png"
-//       ),
-//       blending: THREE.AdditiveBlending,
-//       transparent: true
-//     });
-
-// var citiesMaterial = new THREE.ParticleBasicMaterial({
-//       color: 0xFF0000,
-//       size: 50,
-//       blending: THREE.AdditiveBlending,
-//       transparent: true
-//     });
-
+var coastParticles  = new THREE.Geometry();
+var coastMaterial   = new THREE.ParticleBasicMaterial({
+                            color:        0xff0000,
+                            size:         10,
+                            map:          THREE.ImageUtils.loadTexture("images/particle.png"),
+                            blending:     THREE.AdditiveBlending,
+                            transparent:  true
+                          });
 
 var getParticle = function(coord) {
   var size = 200;
@@ -99,7 +87,8 @@ var getParticle = function(coord) {
   return particle;
 }
 
-  
+
+$(function() {
 // Create particles for the globe
 var particleCount = parseFloat(100);
 
@@ -115,8 +104,8 @@ for ( var q = -particleCount; q < particleCount; q++ ) {
     theta += Math.random()/particleCount;
     rho += Math.random()/50;
 
-    var xyzCoord = convert.toCartesian([rho, theta, phi]);
-    var particle = getParticle(xyzCoord);
+    var xyz = convert.toCartesian([rho, theta, phi]);
+    var particle = getParticle(xyz);
     globeParticles.vertices.push(particle);
   }
 }
@@ -127,6 +116,26 @@ for ( var i in cities ) {
   particle.color = new THREE.Color(0xff0000);
   citiesParticles.vertices.push(particle);
  }
+
+// Create particles for coastline
+var process = function(coordinates) {
+  for (var i = 0; i < coordinates.length; i++) {
+    var longitude = coordinates[i][0];
+    var latitude = coordinates[i][1];
+    var height = 1;
+    var particle = getParticle(convert.geoToCartesian([height, longitude, latitude]));
+    coastParticles.vertices.push(particle);
+  }
+};
+
+$.getJSON('js/data/coastlines.geojson', function(json) {
+  var features = json.features;
+  for (var i = 0; i < features.length; i++ ) {
+    process(features[i]['geometry']['coordinates']);
+  }
+});
+
+
 
 
 
@@ -139,10 +148,15 @@ var citiesParticleSystem = new THREE.ParticleSystem(
   citiesParticles,
   citiesMaterial);
 
+var coastParticleSystem = new THREE.ParticleSystem(
+  coastParticles,
+  coastMaterial);
+
   
 // add it to the scene
 scene.addChild(globeParticleSystem);
 scene.addChild(citiesParticleSystem);
+scene.addChild(coastParticleSystem);
 
 
   
@@ -172,3 +186,4 @@ function update() {
 };
   
 requestAnimFrame(update);
+});
