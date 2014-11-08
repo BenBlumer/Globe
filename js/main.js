@@ -128,12 +128,11 @@ var process = function(coordinates) {
   }
 };
 
-$.get('js/data/coastlines.json', function(json) {
-  var features = json.features;
-  for (var i = 0; i < features.length; i++ ) {
-    process(features[i]['geometry']['coordinates']);
-  }
-}, 'json');
+var features = coastlines.features;
+for (var i = 0; i < features.length; i++ ) {
+  process(features[i]['geometry']['coordinates']);
+}
+
 
 
 
