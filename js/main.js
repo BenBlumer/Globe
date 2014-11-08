@@ -37,7 +37,7 @@ camera.position.z = 850;
 
 // start the renderer - set the clear colour
 // to a full black
-renderer.setClearColor(new THREE.Color(0x111111));
+renderer.setClearColor(new THREE.Color(0xfafafa));
 renderer.setSize(WIDTH, HEIGHT);
 
 // attach the render-supplied DOM element
@@ -50,31 +50,31 @@ $container.append(renderer.domElement);
 layers = {
   sphere: {
     material:  new THREE.ParticleBasicMaterial({
-                    color:        0xfafafa,
-                    size:         5,
-                    map:          THREE.ImageUtils.loadTexture("images/particle.png"),
+                    color:        0x111111,
+                    size:         2,
+                    map:          THREE.ImageUtils.loadTexture("images/dust.png"),
                     blending:     THREE.AdditiveBlending,
-                    transparent:  true
+                    // transparent:  true
                   }),
   },
 
   coastlines: {
     material: new THREE.ParticleBasicMaterial({
-                    color:        0xff0000,
-                    size:         10,
-                    map:          THREE.ImageUtils.loadTexture("images/particle.png"),
+                    color:        0x111111,
+                    size:         6,
+                    map:          THREE.ImageUtils.loadTexture("images/dust.png"),
                     blending:     THREE.AdditiveBlending,
-                    transparent:  true
+                    // transparent:  true
                   }),
   },
 
   cities: {
     material: new THREE.ParticleBasicMaterial({
                     color:        0xff0000,
-                    size:         50,
-                    map:          THREE.ImageUtils.loadTexture("images/particle.png"),
+                    size:         15,
+                    map:          THREE.ImageUtils.loadTexture("images/dust.png"),
                     blending:     THREE.AdditiveBlending,
-                    transparent:  true
+                    // transparent:  true
                   }),
   },
 }
@@ -90,9 +90,9 @@ var getParticle = function(coord) {
   var size = 200;
   var particle = new THREE.Vertex(
     new THREE.Vector3(
-      coord[1] * size, 
-      coord[0] * size,
-      coord[2] * size
+      coord[0] * size, 
+      coord[2] * size,
+      coord[1] * size
     )
   );
   return particle;
@@ -100,7 +100,7 @@ var getParticle = function(coord) {
 
 
 // Create particles for the globe
-var particleCount = parseFloat(500);
+var particleCount = parseFloat(100);
 
 for ( var q = -particleCount; q < particleCount; q++ ) {
 
