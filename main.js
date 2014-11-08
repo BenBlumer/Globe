@@ -59,17 +59,34 @@
       }),
       citiesMaterial = new THREE.ParticleBasicMaterial({
         color: 0xFF0000,
-        size: 50,
+        size: 10,
         blending: THREE.AdditiveBlending,
-        transparent: true
+        transparent: true,
+        map: THREE.ImageUtils.loadTexture(
+          "images/particle.png")
       });
 
-  var nyc = [40.7056308,-73.9780035];
-  var van = [49.2569777,-123.123904];
-  var bsas = [-34.6158527,-58.4332985];
-  var santiago = [-33.6682982,-70.363372];
-  var london = [51.5286416,-0.1015987];
-  var capetown = [-33.9149861,18.6560594];
+  // var nyc = [40.7056308,-73.9780035];
+  // var van = [49.2569777,-123.123904];
+  // var bsas = [-34.6158527,-58.4332985];
+  // var santiago = [-33.6682982,-70.363372];
+  // var london = [51.5286416,-0.1015987];
+  // var capetown = [-33.9149861,18.6560594];
+
+
+  $.getJSON("ne_110m_coastline.geojson", function(json) {
+    
+    var features = json.features;
+    var coords = [];
+    for (var i = 0; i < features.length; i++ ) {
+
+      var feature = features[i];
+      coords = coords.concat(feature.geometry.coordinates);
+      // debugger;
+    }
+    console.log(coords.length);
+    generateCoast(coords);
+  });
 
   var toCartesian = function(theta, phi) {
     return [ Math.cos(theta) * Math.sin(phi),
@@ -79,12 +96,12 @@
 
   var lngLatToSpherical= function(longitude, latitude) {
     var theta = Math.PI * (0.5 - (longitude / 180.0));
-    var phi = Math.PI * (-1*latitude / 180.0);
-    return [phi, theta];
+    var phi = Math.PI * (0.5 - (latitude / 180.0));
+    return  [theta, phi];
   }
 
   var getParticle = function(coord) {
-    size = 200
+    size = 100;
     particle = new THREE.Vertex(
       new THREE.Vector3(
         coord[0] * size, 
@@ -99,17 +116,17 @@
   var f_total = parseFloat(particleCount);
   
   // now create the individual particles
-  for(var p = -particleCount; p < particleCount; p++) {
-    for (var q = -particleCount; q < particleCount; q++) {
+  // for(var p = -particleCount; p < particleCount; p++) {
+  //   for (var q = -particleCount; q < particleCount; q++) {
       
-      var theta = (parseFloat(p) / f_total) * Math.PI;
-      var phi = (parseFloat(q) / f_total) * Math.PI;
+  //     var theta = (parseFloat(p) / f_total) * Math.PI;
+  //     var phi = (parseFloat(q) / f_total) * Math.PI;
 
-      var xyzCoord = toCartesian(theta, phi);
-      var particle = getParticle(xyzCoord);
-      particles.vertices.push(particle);
-    }
-  }
+  //     var xyzCoord = toCartesian(theta, phi);
+  //     var particle = getParticle(xyzCoord);
+  //     particles.vertices.push(particle);
+  //   }
+  // }
 
   var mapCity = function(lngLat) {
     var longitude = lngLat[0];
@@ -119,14 +136,24 @@
     var particle = getParticle(xyz);
     particle.color = new THREE.Color( 0xff0000 );
     citiesParticles.vertices.push(particle);
+    
+  }
+
+  
+  var generateCoast = function (coords) {
+    for (var i = 0; i < coords.length; i++) {
+      mapCity(coords[i]);
+    }
+    scene.addChild(citiesParticleSystem);
   }
   
-  mapCity(van);
+  // generateCoast();
+  // mapCity(van);
   // mapCity(santiago);
   // mapCity(bsas);
-   mapCity(nyc);
-  mapCity(capetown);
-  mapCity(london);
+   // mapCity(nyc);
+  // mapCity(capetown);
+  // mapCity(london);
   
   // create the particle system
   var globeParticleSystem = new THREE.ParticleSystem(
@@ -136,13 +163,12 @@
   var citiesParticleSystem = new THREE.ParticleSystem(
     citiesParticles,
     citiesMaterial);
+    
 
   //particleSystem.sortParticles = true;
   
   // add it to the scene
   scene.addChild(globeParticleSystem);
-  scene.addChild(citiesParticleSystem);
-
 
   
   // animation loop
