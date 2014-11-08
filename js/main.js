@@ -46,35 +46,46 @@ $container.append(renderer.domElement);
 //***** PARTICLE MAGIC *********
 //******************************
 
+// Set-up layers and material
+layers = {
+  sphere: {
+    material:  new THREE.ParticleBasicMaterial({
+                    color:        0xfafafa,
+                    size:         5,
+                    map:          THREE.ImageUtils.loadTexture("images/particle.png"),
+                    blending:     THREE.AdditiveBlending,
+                    transparent:  true
+                  }),
+  },
+
+  coastlines: {
+    material: new THREE.ParticleBasicMaterial({
+                    color:        0xff0000,
+                    size:         10,
+                    map:          THREE.ImageUtils.loadTexture("images/particle.png"),
+                    blending:     THREE.AdditiveBlending,
+                    transparent:  true
+                  }),
+  },
+
+  cities: {
+    material: new THREE.ParticleBasicMaterial({
+                    color:        0xff0000,
+                    size:         50,
+                    map:          THREE.ImageUtils.loadTexture("images/particle.png"),
+                    blending:     THREE.AdditiveBlending,
+                    transparent:  true
+                  }),
+  },
+}
+
+// Give each layer a collection of particles
+for (var i in layers) {
+  layers[i].particles = new THREE.Geometry();
+}
 
 
-var globeParticles  = new THREE.Geometry();
-var globeMaterial   = new THREE.ParticleBasicMaterial({
-                            color:        0xfafafa,
-                            size:         5,
-                            map:          THREE.ImageUtils.loadTexture("images/particle.png"),
-                            blending:     THREE.AdditiveBlending,
-                            transparent:  true
-                          });
-
-var citiesParticles = new THREE.Geometry();
-var citiesMaterial  = new THREE.ParticleBasicMaterial({
-                            color:        0xff0000,
-                            size:         100,
-                            map:          THREE.ImageUtils.loadTexture("images/particle.png"),
-                            blending:     THREE.AdditiveBlending,
-                            transparent:  true
-                          }); 
-
-var coastParticles  = new THREE.Geometry();
-var coastMaterial   = new THREE.ParticleBasicMaterial({
-                            color:        0xff0000,
-                            size:         10,
-                            map:          THREE.ImageUtils.loadTexture("images/particle.png"),
-                            blending:     THREE.AdditiveBlending,
-                            transparent:  true
-                          });
-
+// Helper function. Takes coord[x, y, z] and spits out a vector for particle
 var getParticle = function(coord) {
   var size = 200;
   var particle = new THREE.Vertex(
@@ -88,9 +99,8 @@ var getParticle = function(coord) {
 }
 
 
-$(function() {
 // Create particles for the globe
-var particleCount = parseFloat(100);
+var particleCount = parseFloat(500);
 
 for ( var q = -particleCount; q < particleCount; q++ ) {
 
@@ -101,12 +111,12 @@ for ( var q = -particleCount; q < particleCount; q++ ) {
     var theta = q/particleCount * Math.PI;
     var rho = 1;
     
-    theta += Math.random()/particleCount;
-    rho += Math.random()/50;
+    // theta += Math.random()/particleCount;
+    // rho += Math.random()/50;
 
     var xyz = convert.toCartesian([rho, theta, phi]);
     var particle = getParticle(xyz);
-    globeParticles.vertices.push(particle);
+    layers.sphere.particles.vertices.push(particle);
   }
 }
 
@@ -114,7 +124,7 @@ for ( var q = -particleCount; q < particleCount; q++ ) {
 for ( var i in cities ) {
   var particle = getParticle(convert.geoToCartesian(cities[i]));
   particle.color = new THREE.Color(0xff0000);
-  citiesParticles.vertices.push(particle);
+  layers.cities.particles.vertices.push(particle);
  }
 
 // Create particles for coastline
@@ -124,7 +134,7 @@ var process = function(coordinates) {
     var latitude = coordinates[i][1];
     var height = 1;
     var particle = getParticle(convert.geoToCartesian([height, longitude, latitude]));
-    coastParticles.vertices.push(particle);
+    layers.coastlines.particles.vertices.push(particle);
   }
 };
 
@@ -137,46 +147,34 @@ for (var i = 0; i < features.length; i++ ) {
 
 
 // *** Create particle systems ***
-var globeParticleSystem = new THREE.ParticleSystem(
-  globeParticles,
-  globeMaterial);
+for (var i in layers) {
+  layers[i].system = new THREE.ParticleSystem(
+                            layers[i].particles,
+                            layers[i].material);
+ }
 
-var citiesParticleSystem = new THREE.ParticleSystem(
-  citiesParticles,
-  citiesMaterial);
-
-var coastParticleSystem = new THREE.ParticleSystem(
-  coastParticles,
-  coastMaterial);
-  
-// add it to the scene
-scene.addChild(globeParticleSystem);
-scene.addChild(citiesParticleSystem);
-scene.addChild(coastParticleSystem);
-
+// Add particle systems to the scene 
+for (var i in layers) {
+  scene.addChild(layers[i].system);
+ }
 
   
-  // animation loop
+// animation loop
 function update() {
   
-  // add some rotation to the system
-  globeParticleSystem.rotation.y += 0.005;
-  citiesParticleSystem.rotation.y += 0.005;
-  coastParticleSystem.rotation.y += 0.005;
+  for (var i in layers) {
+    var system = layers[i].system; // changes to `system` will apply to each ParticleSystem
 
-  
-  /* flag to the particle system that we've
-  changed its vertices. This is the
-  dirty little secret. */
-  globeParticleSystem.geometry.__dirtyVertices = true;
-  citiesParticleSystem.geometry.__dirtyVertices = true;
-  coastParticleSystem.geometry.__dirtyVertices = true;
+    system.rotation.y += 0.005; // add some rotation to the system
+
+    /* flag to the particle system that we've
+      changed its vertices. This is the
+      dirty little secret. */
+    system.geometry.__dirtyVertices = true;
+  };
   
   renderer.render(scene, camera);
-  
-  // set up the next call
-  requestAnimFrame(update);
+  requestAnimFrame(update);   // set up the next call
 };
   
 requestAnimFrame(update);
-});

@@ -19,9 +19,9 @@ convert = {
     var longitude = coords[1];
     var latitude = coords[2];
 
-    var rho = coords[0];
-    var theta = Math.PI * (-1*latitude / 180.0);
-    var phi = Math.PI * (0.5 - (longitude / 180.0));
+    var rho   = coords[0];
+    var theta = Math.PI * (0.5 - latitude / 180.0);
+    var phi   = Math.PI * (0.5 - longitude / 180.0);
     return [rho, theta, phi];
   },
 
