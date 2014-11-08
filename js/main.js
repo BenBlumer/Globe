@@ -128,14 +128,12 @@ var process = function(coordinates) {
   }
 };
 
-$.getJSON('js/data/coastlines.geojson', function(json) {
+$.get('js/data/coastlines.json', function(json) {
   var features = json.features;
   for (var i = 0; i < features.length; i++ ) {
     process(features[i]['geometry']['coordinates']);
   }
-});
-
-
+}, 'json');
 
 
 
@@ -151,7 +149,6 @@ var citiesParticleSystem = new THREE.ParticleSystem(
 var coastParticleSystem = new THREE.ParticleSystem(
   coastParticles,
   coastMaterial);
-
   
 // add it to the scene
 scene.addChild(globeParticleSystem);
@@ -166,18 +163,15 @@ function update() {
   // add some rotation to the system
   globeParticleSystem.rotation.y += 0.005;
   citiesParticleSystem.rotation.y += 0.005;
+  coastParticleSystem.rotation.y += 0.005;
 
-  var pCount = particleCount;
-  while(pCount--) {
-    // get the particle
-    var particle = globeParticles.vertices[pCount];
-  }
   
   /* flag to the particle system that we've
   changed its vertices. This is the
   dirty little secret. */
   globeParticleSystem.geometry.__dirtyVertices = true;
   citiesParticleSystem.geometry.__dirtyVertices = true;
+  coastParticleSystem.geometry.__dirtyVertices = true;
   
   renderer.render(scene, camera);
   
