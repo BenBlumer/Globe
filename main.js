@@ -68,7 +68,9 @@
   var van = [49.2569777,-123.123904];
   var bsas = [-34.6158527,-58.4332985];
   var santiago = [-33.6682982,-70.363372];
-  
+  var london = [51.5286416,-0.1015987];
+  var capetown = [-33.9149861,18.6560594];
+
   var toCartesian = function(theta, phi) {
     return [ Math.cos(theta) * Math.sin(phi),
              Math.sin(theta) * Math.sin(phi),
@@ -76,9 +78,9 @@
   }
 
   var lngLatToSpherical= function(longitude, latitude) {
-    var phi = Math.PI * (longitude / 180.0);
-    var theta = Math.PI * (1 - (latitude / 90.0));
-    return [theta, phi];
+    var theta = Math.PI * (0.5 - (longitude / 180.0));
+    var phi = Math.PI * (-1*latitude / 180.0);
+    return [phi, theta];
   }
 
   var getParticle = function(coord) {
@@ -109,32 +111,22 @@
     }
   }
 
-  // Map NYC!
-  var nycSpherical = lngLatToSpherical(nyc[0], nyc[1]);
-  var nycXYZ = toCartesian(nycSpherical[0], nycSpherical[1]);
-
-  var particle = getParticle(nycXYZ);
-  particle.color = new THREE.Color( 0xff0000 );
+  var mapCity = function(lngLat) {
+    var longitude = lngLat[0];
+    var latitude = lngLat[1];
+    var spherical = lngLatToSpherical(lngLat[0], lngLat[1]);
+    var xyz = toCartesian(spherical[0], spherical[1]);
+    var particle = getParticle(xyz);
+    particle.color = new THREE.Color( 0xff0000 );
+    citiesParticles.vertices.push(particle);
+  }
   
-  citiesParticles.vertices.push(particle);
-  
-// Map Buenos Aires!
-  var bsasSpherical = lngLatToSpherical(bsas[0], bsas[1]);
-  var bsasXYZ = toCartesian(bsasSpherical[0], bsasSpherical[1]);
-
-  var particle = getParticle(bsasXYZ);
-  particle.color = new THREE.Color( 0xff0000 );
-  
-  citiesParticles.vertices.push(particle);
-
-  // Map Santiago!
-  var santiagoSpherical = lngLatToSpherical(santiago[0], santiago[1]);
-  var santiagoXYZ = toCartesian(santiagoSpherical[0], santiagoSpherical[1]);
-
-  var particle = getParticle(santiagoXYZ);
-  particle.color = new THREE.Color( 0xff0000 );
-  
-  citiesParticles.vertices.push(particle);
+  mapCity(van);
+  // mapCity(santiago);
+  // mapCity(bsas);
+   mapCity(nyc);
+  mapCity(capetown);
+  mapCity(london);
   
   // create the particle system
   var globeParticleSystem = new THREE.ParticleSystem(
